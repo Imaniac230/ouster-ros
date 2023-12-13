@@ -125,6 +125,7 @@ class LidarPacketHandler {
             info, handlers, timestamp_mode, ptp_utc_tai_offset);
         return [handler](const uint8_t* lidar_buf) {
             if (handler->lidar_packet_accumlator(lidar_buf)) {
+              std::cout << "publishing cloud from accumulated packets: " << handler->getPacketsAccumulated() << std::endl;
                 for (auto h : handler->lidar_scan_handlers) {
                     h(*handler->lidar_scan, handler->lidar_scan_estimated_ts,
                       handler->lidar_scan_estimated_msg_ts);
@@ -230,7 +231,14 @@ class LidarPacketHandler {
     bool lidar_handler_sensor_time_ptp(const sensor::packet_format&,
                                        const uint8_t* lidar_buf,
                                        int64_t ptp_utc_tai_offset) {
+        if (starting_new_scan) {
+            std::cout << "starting new scan, packets accumulated: " << packets_accumulated << std::endl;
+            packets_accumulated = 0;
+            starting_new_scan = false;
+        }
+        ++packets_accumulated;
         if (!(*scan_batcher)(lidar_buf, *lidar_scan)) return false;
+        starting_new_scan = true;
         auto ts_v = lidar_scan->timestamp();
         for (int i = 0; i < ts_v.rows(); ++i)
             ts_v[i] = impl::ts_safe_offset_add(ts_v[i], ptp_utc_tai_offset);
@@ -263,6 +271,10 @@ class LidarPacketHandler {
         return one_sec_in_ns / (scan_width * scan_frequency);
     }
 
+    uint64_t getPacketsAccumulated() {
+        return packets_accumulated;
+    }
+
    private:
     std::unique_ptr<ouster::ScanBatcher> scan_batcher;
     std::unique_ptr<ouster::LidarScan> lidar_scan;
@@ -284,6 +296,9 @@ class LidarPacketHandler {
     std::vector<LidarScanProcessor> lidar_scan_handlers;
 
     LidarPacketAccumlator lidar_packet_accumlator;
+
+    uint64_t packets_accumulated = 0;
+    bool starting_new_scan = false;
 };
 
 }  // namespace ouster_ros
