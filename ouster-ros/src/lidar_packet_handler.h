@@ -125,8 +125,8 @@ class LidarPacketHandler {
             info, handlers, timestamp_mode, ptp_utc_tai_offset);
         return [handler](const uint8_t* lidar_buf) {
             if (handler->lidar_packet_accumlator(lidar_buf)) {
-              std::cout << "publishing cloud from accumulated packets: " << handler->getPacketsAccumulated() << std::endl;
-                for (auto h : handler->lidar_scan_handlers) {
+//              std::cout << "publishing cloud from accumulated packets: " << handler->getPacketsAccumulated() << std::endl;
+                for (const auto& h : handler->lidar_scan_handlers) {
                     h(*handler->lidar_scan, handler->lidar_scan_estimated_ts,
                       handler->lidar_scan_estimated_msg_ts);
                 }
@@ -232,7 +232,7 @@ class LidarPacketHandler {
                                        const uint8_t* lidar_buf,
                                        int64_t ptp_utc_tai_offset) {
         if (starting_new_scan) {
-            std::cout << "starting new scan, packets accumulated: " << packets_accumulated << std::endl;
+//            std::cout << "starting new scan, packets accumulated: " << packets_accumulated << std::endl;
             packets_accumulated = 0;
             starting_new_scan = false;
         }

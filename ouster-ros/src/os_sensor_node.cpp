@@ -726,6 +726,34 @@ void OusterSensor::handle_lidar_packet(sensor::client& cli,
                 reactivate_sensor(true);
             }
         }
+
+        //FIXME(missing-lidar-chunk): we never actually receive some data chunk after meas ID 191,
+        // refactoring threads from lambdas to binds had no effect
+        // explicit or random ports have no effect
+        // using write() or write_overwrite() shows no difference
+        // drops don't appear on the i5-7600K with a single subscriber - still fails with multiple,
+        //  community version is still more stable
+        if (!success) std::cout << "ERROR reading lidar packet!" << std::endl;
+        const uint16_t f_id = pf.frame_id(buffer);
+        const uint16_t fIDDiff = f_id - lastFrameID;
+        if (fIDDiff > 1) {
+            std::cout << "missing " << (fIDDiff - 1) << " whole frames (last f_id: " << lastFrameID << ", new f_id: " << f_id << ")" << std::endl;
+        }
+        for (int icol = 0; icol < pf.columns_per_packet; icol++) {
+            const uint8_t* col_buf = pf.nth_col(icol, buffer);
+            const uint16_t m_id = pf.col_measurement_id(col_buf);
+            if (f_id == lastFrameID) {
+                const uint16_t mIDDiff = m_id - lastMeasID;
+                if (mIDDiff > 1) {
+                  std::cout << "missing " << (mIDDiff + 1) / 16 << " packets (last m_id: " << lastMeasID << ", new m_id: " << m_id << ")" << std::endl;
+                }
+                if (mIDDiff < 1) {
+                  std::cout << "got the same packet again, (last m_id: " << lastMeasID << ", new m_id: " << m_id << ")" << std::endl;
+                }
+            }
+            lastMeasID = m_id;
+        }
+        lastFrameID = f_id;
     });
 }
 
