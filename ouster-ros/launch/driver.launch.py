@@ -45,7 +45,7 @@ def generate_launch_description():
 
     os_driver = LifecycleNode(
         package='ouster_ros',
-        executable='os_driver',
+        executable='os_driver_bin',
         name=os_driver_name,
         namespace=ouster_ns,
         parameters=[params_file],

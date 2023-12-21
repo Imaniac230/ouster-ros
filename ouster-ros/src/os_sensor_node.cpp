@@ -731,8 +731,11 @@ void OusterSensor::handle_lidar_packet(sensor::client& cli,
         // refactoring threads from lambdas to binds had no effect
         // explicit or random ports have no effect
         // using write() or write_overwrite() shows no difference
-        // drops don't appear on the i5-7600K with a single subscriber - still fails with multiple,
+        // drops don't appear on the i5-7600K with a single subscriber - still fails with multiple subs,
         //  community version is still more stable
+        // connecting directly to the mikrotik router-board or a switch behind it shows no difference
+        // the ringbuffer does not appear to be overfilling
+        // switching binary building from ros2 component binary macro to classic cmake executable does not make a difference
         if (!success) std::cout << "ERROR reading lidar packet!" << std::endl;
         const uint16_t f_id = pf.frame_id(buffer);
         const uint16_t fIDDiff = f_id - lastFrameID;

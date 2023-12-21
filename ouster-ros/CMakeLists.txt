@@ -164,6 +164,28 @@ rclcpp_components_register_node(os_driver_component
   EXECUTABLE os_driver
 )
 
+# classic binary
+add_executable(os_driver_bin
+        src/main.cpp
+        src/os_sensor_node_base.cpp
+        src/os_sensor_node.cpp
+)
+ament_target_dependencies(os_driver_bin
+        rclcpp
+        rclcpp_components
+        rclcpp_lifecycle
+        std_msgs
+        sensor_msgs
+        geometry_msgs
+        std_srvs
+)
+target_link_libraries(os_driver_bin ouster_ros_library)
+install(TARGETS os_driver_bin
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
 
 # ==== Test ====
 if(BUILD_TESTING)
