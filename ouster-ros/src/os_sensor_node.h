@@ -190,6 +190,7 @@ class OusterSensor : public OusterSensorNodeBase {
 
     uint16_t lastFrameID = -1;
     uint16_t lastMeasID = -1;
+    std::chrono::time_point<std::chrono::high_resolution_clock> lastTimeStamp = std::chrono::high_resolution_clock::now();
 };
 
 }  // namespace ouster_ros

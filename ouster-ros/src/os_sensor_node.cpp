@@ -13,6 +13,7 @@
 // clang-format on
 
 #include <chrono>
+#include <iomanip>
 
 #include "os_sensor_node.h"
 
@@ -736,12 +737,14 @@ void OusterSensor::handle_lidar_packet(sensor::client& cli,
         // connecting directly to the mikrotik router-board or a switch behind it shows no difference
         // the ringbuffer does not appear to be overfilling
         // switching binary building from ros2 component binary macro to classic cmake executable does not make a difference
-        const auto timeStamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-        if (!success) std::cout << "[" << timeStamp << "] ERROR reading lidar packet!" << std::endl;
+        const auto timeStamp = std::chrono::high_resolution_clock::now();
+        const auto timeDiff = (timeStamp - lastTimeStamp).count();
+        const auto echoStamp = timeStamp.time_since_epoch().count();
+        if (!success) std::cout << "[" << echoStamp << "] ERROR reading lidar packet! (time diff: " << std::setw(10) << timeDiff << std::setw(0) << " ns)" << std::endl;
         const uint16_t f_id = pf.frame_id(buffer);
         const uint16_t fIDDiff = f_id - lastFrameID;
         if (fIDDiff > 1) {
-            std::cout << "[" << timeStamp << "] missing " << (fIDDiff - 1) << " whole frames (last f_id: " << lastFrameID << ", new f_id: " << f_id << ")" << std::endl;
+            std::cout << "[" << echoStamp << "] missing " << (fIDDiff - 1) << " whole frames (last f_id: " << lastFrameID << ", new f_id: " << f_id << ", time diff: " << std::setw(10) << timeDiff << std::setw(0) << " ns)" << std::endl;
         }
         for (int icol = 0; icol < pf.columns_per_packet; icol++) {
             const uint8_t* col_buf = pf.nth_col(icol, buffer);
@@ -749,15 +752,17 @@ void OusterSensor::handle_lidar_packet(sensor::client& cli,
             if (f_id == lastFrameID) {
                 const uint16_t mIDDiff = m_id - lastMeasID;
                 if (mIDDiff > 1) {
-                  std::cout << "[" << timeStamp << "] missing " << (mIDDiff + 1) / 16 << " packets (last m_id: " << lastMeasID << ", new m_id: " << m_id << ")" << std::endl;
+                  std::cout << "[" << echoStamp << "] missing " << (mIDDiff + 1) / 16 << " packets (last m_id: " << lastMeasID << ", new m_id: " << m_id << ", time diff: " << std::setw(10) << timeDiff << std::setw(0) << " ns)" << std::endl;
                 }
                 if (mIDDiff < 1) {
-                  std::cout << "[" << timeStamp << "] got the same packet again, (last m_id: " << lastMeasID << ", new m_id: " << m_id << ")" << std::endl;
+                  std::cout << "[" << echoStamp << "] got the same packet again, (last m_id: " << lastMeasID << ", new m_id: " << m_id << ", time diff: " << std::setw(10) << timeDiff << std::setw(0) << " ns)" << std::endl;
                 }
             }
             lastMeasID = m_id;
         }
         lastFrameID = f_id;
+        lastTimeStamp = timeStamp;
+//        std::cout << "time diff: " << std::setw(10) << timeDiff << std::setw(0) << " ns" << std::endl;
     });
 }
 
