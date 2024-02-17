@@ -163,13 +163,13 @@ class OusterSensor : public OusterSensorNodeBase {
     std::unique_ptr<ThreadSafeRingBuffer> lidar_packets;
     std::unique_ptr<ThreadSafeRingBuffer> imu_packets;
 
-    std::atomic<bool> sensor_connection_active = {false};
+    std::atomic_bool sensor_connection_active = {false};
     std::unique_ptr<std::thread> sensor_connection_thread;
 
-    std::atomic<bool> imu_packets_processing_thread_active = {false};
+    std::atomic_bool imu_packets_processing_thread_active = {false};
     std::unique_ptr<std::thread> imu_packets_processing_thread;
 
-    std::atomic<bool> lidar_packets_processing_thread_active = {false};
+    std::atomic_bool lidar_packets_processing_thread_active = {false};
     std::unique_ptr<std::thread> lidar_packets_processing_thread;
 
     bool force_sensor_reinit = false;
@@ -191,6 +191,7 @@ class OusterSensor : public OusterSensorNodeBase {
     uint16_t lastFrameID = -1;
     uint16_t lastMeasID = -1;
     std::chrono::time_point<std::chrono::high_resolution_clock> lastTimeStamp = std::chrono::high_resolution_clock::now();
+    std::atomic_uint64_t writeCounter = {0}, readCounter = {0};
 };
 
 }  // namespace ouster_ros
