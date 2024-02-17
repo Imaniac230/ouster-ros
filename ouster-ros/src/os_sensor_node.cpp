@@ -750,8 +750,7 @@ void OusterSensor::handle_lidar_packet(sensor::client& cli,
             const uint64_t counterDiff = writeCounter.load() - readCounter.load();
             std::cout << "[" << echoStamp << "] missing " << (fIDDiff - 1) << " whole frames (last f_id: " << lastFrameID << ", new f_id: " << f_id << ", time diff: " << std::setw(10) << timeDiff << std::setw(0) << " ns)" << std::endl;
             std::cout << "unprocessed packets: " << counterDiff << " (written: " << writeCounter.load() << ", read: " << readCounter.load() << ")" << std::endl;
-            //the 'lidar_packets->size()' call here would deadlock unless atomics are used
-//            std::cout << "buffer active items: " << lidar_packets->size() << std::endl;
+            std::cout << "buffer active items: " << lidar_packets->size() << std::endl;
         }
         for (int icol = 0; icol < pf.columns_per_packet; icol++) {
             const uint8_t* col_buf = pf.nth_col(icol, buffer);
@@ -762,15 +761,13 @@ void OusterSensor::handle_lidar_packet(sensor::client& cli,
                   const uint64_t counterDiff = writeCounter.load() - readCounter.load();
                   std::cout << "[" << echoStamp << "] missing " << (mIDDiff + 1) / 16 << " packets (last m_id: " << lastMeasID << ", new m_id: " << m_id << ", time diff: " << std::setw(10) << timeDiff << std::setw(0) << " ns)" << std::endl;
                   std::cout << "unprocessed packets: " << counterDiff << " (written: " << writeCounter.load() << ", read: " << readCounter.load() << ")" << std::endl;
-                  //the 'lidar_packets->size()' call here would deadlock unless atomics are used
-//                  std::cout << "buffer active items: " << lidar_packets->size() << std::endl;
+                  std::cout << "buffer active items: " << lidar_packets->size() << std::endl;
                 }
                 if (mIDDiff < 1) {
                   const uint64_t counterDiff = writeCounter.load() - readCounter.load();
                   std::cout << "[" << echoStamp << "] got the same packet again, (last m_id: " << lastMeasID << ", new m_id: " << m_id << ", time diff: " << std::setw(10) << timeDiff << std::setw(0) << " ns)" << std::endl;
                   std::cout << "unprocessed packets: " << counterDiff << " (written: " << writeCounter.load() << ", read: " << readCounter.load() << ")" << std::endl;
-                  //the 'lidar_packets->size()' call here would deadlock unless atomics are used
-//                  std::cout << "buffer active items: " << lidar_packets->size() << std::endl;
+                  std::cout << "buffer active items: " << lidar_packets->size() << std::endl;
                 }
             }
             lastMeasID = m_id;
@@ -870,8 +867,7 @@ void OusterSensor::start_packet_processing_threads() {
                 const uint64_t counterDiff = writeCounter.load() - readCounter.load();
                 if (counterDiff > 0) {
                   std::cout << "unprocessed packets: " << counterDiff << " (written: " << writeCounter.load() << ", read: " << readCounter.load() << ")" << std::endl;
-                  //the 'lidar_packets->size()' call here would deadlock unless atomics are used
-//                  std::cout << "buffer active items: " << lidar_packets->size() << std::endl;
+                  std::cout << "buffer active items: " << lidar_packets->size() << std::endl;
                 }
 
                 on_lidar_packet_msg(buffer);
