@@ -69,7 +69,7 @@ class ThreadSafeRingBuffer {
     }
 
     /**
-     * Writes to the buffer safely, the method will keep blocking until the
+     * Writes to the buffer safely, this method will keep blocking until the
      * there is a space available within the buffer.
      */
     template <class BufferWriteFn>
@@ -88,7 +88,7 @@ class ThreadSafeRingBuffer {
 
     /**
      * Writes to the buffer safely, if there is no space left, then this method
-     * will overwite the last item.
+     * will overwrite the last item.
      */
     template <class BufferWriteFn>
     void write_overwrite(BufferWriteFn&& buffer_write) {
@@ -96,13 +96,7 @@ class ThreadSafeRingBuffer {
         write_idx += 1;
         size_t c = capacity();
         write_idx.compare_exchange_strong(c, 0);
-        if (active_items_count.load() < capacity()) {
-            ++active_items_count;
-        } else {
-            read_idx += 1;
-            c = capacity();
-            read_idx.compare_exchange_strong(c, 0);
-        }
+        if (active_items_count.load() < capacity()) ++active_items_count;
         new_data_condition.notify_all();
     }
 
@@ -123,7 +117,7 @@ class ThreadSafeRingBuffer {
     }
 
     /**
-     * Gives access to read the buffer through a callback, the method will block
+     * Gives access to read the buffer through a callback, this method will block
      * until there is something to read available.
      */
     template <typename BufferReadFn>
@@ -141,7 +135,7 @@ class ThreadSafeRingBuffer {
 
     /**
      * Gives access to read the buffer through a callback, if buffer is
-     * inaccessible the method will timeout and the callback is not performed.
+     * inaccessible this method will timeout and the callback is not performed.
      */
     template <typename BufferReadFn>
     void read_timeout(BufferReadFn&& buffer_read,
@@ -160,7 +154,7 @@ class ThreadSafeRingBuffer {
     }
 
     /**
-     * Gives access to read the buffer through a callback, the method will return
+     * Gives access to read the buffer through a callback, this method will return
      * immediately and the callback is performed only when there is data available.
      */
     template <typename BufferReadFn>
