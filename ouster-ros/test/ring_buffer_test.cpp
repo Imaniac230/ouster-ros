@@ -8,8 +8,8 @@ using namespace std::chrono_literals;
 
 class ThreadSafeRingBufferTest : public ::testing::Test {
   protected:
-    static const int ITEM_SIZE = 4;   // predefined size for all items used in
-    static const int ITEM_COUNT = 3;  // number of item the buffer could hold
+    static constexpr int ITEM_SIZE = 4;   // predefined size for all items used in
+    static constexpr int ITEM_COUNT = 3;  // number of item the buffer could hold
 
     void SetUp() override {
         buffer = std::make_unique<ThreadSafeRingBuffer>(ITEM_SIZE, ITEM_COUNT);
@@ -160,17 +160,27 @@ TEST_F(ThreadSafeRingBufferTest, ReadWriteToBufferWithOverwrite) {
     producer.join();
     consumer.join();
 
-    // Since our buffer can host only up to ITEM_COUNT simultanously only the
+    // Since our buffer can host only up to ITEM_COUNT simultaneously only the
     // last ITEM_COUNT items would have remained in the buffer by the time
     // the consumer started processing.
-    for (int i = 0; i < ITEM_COUNT; ++i) {
+    // If TOTAL_ITEMS is not divisible by ITEM_COUNT, the beginning of the buffer,
+    // will contain a section of ITEM_COUNT items with the latest overwritten data.
+    for (int i = 0; i < TOTAL_ITEMS % ITEM_COUNT; ++i) {
         std::cout << "source " << source[i] << ", target " << target[i] << std::endl;
-        EXPECT_EQ(target[i], source[TOTAL_ITEMS-ITEM_COUNT+i]); 
+        EXPECT_EQ(target[i], source[TOTAL_ITEMS - (TOTAL_ITEMS % ITEM_COUNT) + i]);
     }
-
+    // If TOTAL_ITEMS is divisible by ITEM_COUNT, the whole buffer will contain
+    // exactly the last ITEM_COUNT items. Otherwise, the end of the buffer will
+    // contain a section of ITEM_COUNT items with older data.
+    for (int i = TOTAL_ITEMS % ITEM_COUNT; i < ITEM_COUNT; ++i) {
+        std::cout << "source " << source[i] << ", target " << target[i] << std::endl;
+        EXPECT_EQ(target[i], source[TOTAL_ITEMS - (TOTAL_ITEMS % ITEM_COUNT) - ITEM_COUNT + i]);
+    }
+    // The remaining part of the target will not have any new data, since the buffer,
+    // will now be completely read out.
     for (int i = ITEM_COUNT; i < TOTAL_ITEMS; ++i) {
         std::cout << "source " << source[i] << ", target " << target[i] << std::endl;
-        EXPECT_EQ(target[i], "0000"); 
+        EXPECT_EQ(target[i], "0000");
     }
 }
 
