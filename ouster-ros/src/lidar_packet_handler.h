@@ -91,8 +91,14 @@ class LidarPacketHandler {
         }
 
         lidar_scans_processing_thread = std::make_unique<std::thread>([this]() {
+            auto printed = std::chrono::high_resolution_clock::now();
             while (lidar_scans_processing_active) {
                 process_scans();
+                if ((!ring_buffer.empty()) && ((std::chrono::high_resolution_clock::now() - printed) > std::chrono::milliseconds(20))) {
+                  std::cout << "lidar_scan buffer active items: " << ring_buffer.size() << " (ridx: " << ring_buffer.read_head() << ", widx: " << ring_buffer.write_head()
+                            << ", full: " << ring_buffer.full() << ", empty: " << ring_buffer.empty() << ")" << std::endl;
+                  printed = std::chrono::high_resolution_clock::now();
+                }
             }
             RCLCPP_DEBUG(rclcpp::get_logger(getName()),
                          "lidar_scans_processing_thread done.");
@@ -169,9 +175,9 @@ class LidarPacketHandler {
         // why we hit percent amount of the ring_buffer capacity throlle
         size_t read_step = 1;
         if (ring_buffer.size() > THROTTLE_PERCENT * ring_buffer.capacity()) {
-            RCLCPP_WARN(rclcpp::get_logger(getName()),
-                               "lidar_scans %d%% full, THROTTLING",
-                               static_cast<int>(100* THROTTLE_PERCENT));
+//            RCLCPP_WARN(rclcpp::get_logger(getName()),
+//                               "lidar_scans %d%% full, THROTTLING",
+//                               static_cast<int>(100* THROTTLE_PERCENT));
             read_step = 2;
         }
         ring_buffer.read(read_step);
@@ -267,8 +273,8 @@ class LidarPacketHandler {
                                    const uint8_t* lidar_buf) {
 
         if (ring_buffer.full()) {
-            RCLCPP_WARN(rclcpp::get_logger(getName()),
-                        "lidar_scans full, DROPPING PACKET");
+//            RCLCPP_WARN(rclcpp::get_logger(getName()),
+//                        "lidar_scans full, DROPPING PACKET");
             return false;
         }
 
@@ -288,8 +294,8 @@ class LidarPacketHandler {
                                        int64_t ptp_utc_tai_offset) {
 
         if (ring_buffer.full()) {
-            RCLCPP_WARN(rclcpp::get_logger(getName()),
-                        "lidar_scans full, DROPPING PACKET");
+//            RCLCPP_WARN(rclcpp::get_logger(getName()),
+//                        "lidar_scans full, DROPPING PACKET");
             return false;
         }
 
@@ -319,8 +325,8 @@ class LidarPacketHandler {
         }
 
         if (ring_buffer.full()) {
-            RCLCPP_WARN(rclcpp::get_logger(getName()),
-                        "lidar_scans full, DROPPING PACKET");
+//            RCLCPP_WARN(rclcpp::get_logger(getName()),
+//                        "lidar_scans full, DROPPING PACKET");
             return false;
         }
 
