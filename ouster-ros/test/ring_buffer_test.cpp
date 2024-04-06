@@ -634,9 +634,3 @@ TEST_F(ThreadSafeRingBufferTest, ReadWriteToBufferNonblockingThrottling) {
   EXPECT_TRUE(buffer->empty());
   EXPECT_FALSE(buffer->full());
 }
-
-int main(int argc, char** argv)
-{
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
