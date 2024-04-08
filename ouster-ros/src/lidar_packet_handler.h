@@ -94,7 +94,7 @@ class LidarPacketHandler {
             while (lidar_scans_processing_active) {
                 process_scans();
             }
-            NODELET_DEBUG("lidar_scans_processing_thread done.");
+            std::cout << "DEBUG: lidar_scans_processing_thread done." << std::endl;
         });
 
         // initalize time handlers
@@ -167,7 +167,7 @@ class LidarPacketHandler {
 
         size_t read_step = 1;
         if (ring_buffer.size() > 7) {
-            NODELET_WARN("lidar_scans full, THROTTLING");
+            std::cout << "WARNING: lidar_scans full, THROTTLING" << std::endl;
             read_step = 2;
         }
         ring_buffer.read(read_step);
@@ -263,7 +263,7 @@ class LidarPacketHandler {
                                    const uint8_t* lidar_buf) {
 
         if (ring_buffer.full()) {
-            NODELET_WARN("lidar_scans full, DROPPING PACKET");
+            std::cout << "WARNING: lidar_scans full, DROPPING PACKET" << std::endl;
             return false;
         }
 
@@ -283,7 +283,7 @@ class LidarPacketHandler {
                                        int64_t ptp_utc_tai_offset) {
 
         if (ring_buffer.full()) {
-            NODELET_WARN("lidar_scans full, DROPPING PACKET");
+            std::cout << "WARNING: lidar_scans full, DROPPING PACKET" << std::endl;
             return false;
         }
 
@@ -311,7 +311,7 @@ class LidarPacketHandler {
         }
 
         if (ring_buffer.full()) {
-            NODELET_WARN("lidar_scans full, DROPPING PACKET");
+            std::cout << "WARNING: lidar_scans full, DROPPING PACKET" << std::endl;
             return false;
         }
 
