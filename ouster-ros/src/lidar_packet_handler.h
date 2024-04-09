@@ -91,8 +91,14 @@ class LidarPacketHandler {
         }
 
         lidar_scans_processing_thread = std::make_unique<std::thread>([this]() {
+            auto printed = std::chrono::high_resolution_clock::now();
             while (lidar_scans_processing_active) {
                 process_scans();
+                if ((!ring_buffer.empty()) && ((std::chrono::high_resolution_clock::now() - printed) > std::chrono::milliseconds(20))) {
+                  std::cout << "accumulated scan buffer active items: " << ring_buffer.size() << " (ridx: " << ring_buffer.read_head() << ", widx: " << ring_buffer.write_head()
+                            << ", full: " << ring_buffer.full() << ", empty: " << ring_buffer.empty() << ")" << std::endl;
+                  printed = std::chrono::high_resolution_clock::now();
+                }
             }
             std::cout << "DEBUG: lidar_scans_processing_thread done." << std::endl;
         });
@@ -166,7 +172,7 @@ class LidarPacketHandler {
         }
 
         size_t read_step = 1;
-        if (ring_buffer.size() > 7) {
+        if (ring_buffer.size() > static_cast<size_t>(static_cast<float>(LIDAR_SCAN_COUNT) * 0.7f)) {
             std::cout << "WARNING: lidar_scans full, THROTTLING" << std::endl;
             read_step = 2;
         }
