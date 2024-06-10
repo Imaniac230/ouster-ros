@@ -133,6 +133,15 @@ class ThreadSafeRingBuffer {
         }
     }
 
+    size_t read_index() const {
+      std::lock_guard<std::mutex> lock(mutex);
+      return read_idx;
+    }
+    size_t write_index() const {
+      std::lock_guard<std::mutex> lock(mutex);
+      return write_idx;
+    }
+
    private:
     std::vector<uint8_t> buffer;
     size_t item_size;
